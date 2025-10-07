@@ -165,9 +165,11 @@ hapi:
       service-name: hapi-fhir-jpa-server
       service-version: 1.0.0
       interceptor:
-        type: improved  # Options: enhanced (detailed), improved (production)
+        type: enhanced  # Options: enhanced (detailed with metrics), improved (production)
       exporter:
         type: console  # Options: console, jaeger, otlp
+      metrics:
+        type: simple   # Options: simple, prometheus
       jaeger:
         endpoint: http://localhost:14250
       otlp:

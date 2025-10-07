@@ -6,6 +6,9 @@ import ca.uhn.fhir.interceptor.api.Pointcut;
 import ca.uhn.fhir.jpa.api.dao.IFhirResourceDao;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.method.BaseMethodBinding;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -42,6 +45,26 @@ public class EnhancedFhirTracingInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(EnhancedFhirTracingInterceptor.class);
     
     private final Tracer tracer;
+    private final MeterRegistry meterRegistry;
+    
+    // Micrometer timers for each layer
+    private final Timer httpRequestTimer;
+    private final Timer servletTimer;
+    private final Timer resourceBindingTimer;
+    private final Timer methodBindingTimer;
+    private final Timer providerTimer;
+    private final Timer daoRegistryTimer;
+    private final Timer daoTimer;
+    private final Timer jpaTimer;
+    private final Timer responseTimer;
+    private final Timer totalRequestTimer;
+    
+    // Standard HTTP server request timer (compatible with Grafana dashboards)
+    private final Timer httpServerRequestsTimer;
+    
+    // Counters for requests
+    private final Counter requestCounter;
+    private final Counter errorCounter;
     
     // Timing data structures for performance analysis
     private final Map<RequestDetails, LayerTimings> requestTimings = new ConcurrentHashMap<>();
@@ -77,72 +100,140 @@ public class EnhancedFhirTracingInterceptor {
         public long responseStart;
         public long responseEnd;
         
-        public void printPerformanceReport(String operationName) {
+        public void printPerformanceReport(String operationName, 
+                                           Timer httpRequestTimer, Timer servletTimer, Timer resourceBindingTimer,
+                                           Timer methodBindingTimer, Timer providerTimer, Timer daoRegistryTimer,
+                                           Timer daoTimer, Timer jpaTimer, Timer responseTimer, Timer totalRequestTimer,
+                                           Timer httpServerRequestsTimer) {
             long totalTime = responseEnd - startTime;
             
             logger.info("🔍 === FHIR API Performance Report for: {} ===", operationName);
             logger.info("📊 Total Request Time: {} ms", totalTime / 1_000_000);
             
+            // Record total request time
+            totalRequestTimer.record(totalTime, java.util.concurrent.TimeUnit.NANOSECONDS);
+            
+            // Record standard HTTP server request metrics with tags
+            Timer.Sample httpSample = Timer.start();
+            httpSample.stop(httpServerRequestsTimer);
+            httpServerRequestsTimer.record(totalTime, java.util.concurrent.TimeUnit.NANOSECONDS);
+            
             if (httpRequestEnd > httpRequestStart) {
                 long duration = httpRequestEnd - httpRequestStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🌐 HTTP Request Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                httpRequestTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (servletEnd > servletStart) {
                 long duration = servletEnd - servletStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🔧 RestfulServer Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                servletTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (resourceBindingEnd > resourceBindingStart) {
                 long duration = resourceBindingEnd - resourceBindingStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🔀 ResourceBinding Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                resourceBindingTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (methodBindingEnd > methodBindingStart) {
                 long duration = methodBindingEnd - methodBindingStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🎯 MethodBinding Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                methodBindingTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (providerEnd > providerStart) {
                 long duration = providerEnd - providerStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("📋 JpaResourceProvider Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                providerTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (daoRegistryEnd > daoRegistryStart) {
                 long duration = daoRegistryEnd - daoRegistryStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("📝 DaoRegistry Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                daoRegistryTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (daoEnd > daoStart) {
                 long duration = daoEnd - daoStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🗃️ IFhirResourceDao Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                daoTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (jpaEnd > jpaStart) {
                 long duration = jpaEnd - jpaStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("🔄 JPA/Hibernate Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                jpaTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             if (responseEnd > responseStart) {
                 long duration = responseEnd - responseStart;
                 double percentage = (duration * 100.0) / totalTime;
                 logger.info("📤 Response Layer: {} ms ({:.2f}%)", duration / 1_000_000, percentage);
+                responseTimer.record(duration, java.util.concurrent.TimeUnit.NANOSECONDS);
             }
             
             logger.info("🔍 === End Performance Report ===");
         }
     }
 
-    public EnhancedFhirTracingInterceptor(OpenTelemetry openTelemetry) {
+    public EnhancedFhirTracingInterceptor(OpenTelemetry openTelemetry, MeterRegistry meterRegistry) {
         this.tracer = openTelemetry.getTracer("hapi-fhir-layers", "1.0.0");
+        this.meterRegistry = meterRegistry;
+        
+        // Initialize timers for each layer
+        this.httpRequestTimer = Timer.builder("fhir.layer.http_request")
+            .description("Time spent in HTTP Request layer")
+            .register(meterRegistry);
+        this.servletTimer = Timer.builder("fhir.layer.servlet")
+            .description("Time spent in RestfulServer layer")
+            .register(meterRegistry);
+        this.resourceBindingTimer = Timer.builder("fhir.layer.resource_binding")
+            .description("Time spent in ResourceBinding layer")
+            .register(meterRegistry);
+        this.methodBindingTimer = Timer.builder("fhir.layer.method_binding")
+            .description("Time spent in MethodBinding layer")
+            .register(meterRegistry);
+        this.providerTimer = Timer.builder("fhir.layer.provider")
+            .description("Time spent in JpaResourceProvider layer")
+            .register(meterRegistry);
+        this.daoRegistryTimer = Timer.builder("fhir.layer.dao_registry")
+            .description("Time spent in DaoRegistry layer")
+            .register(meterRegistry);
+        this.daoTimer = Timer.builder("fhir.layer.dao")
+            .description("Time spent in IFhirResourceDao layer")
+            .register(meterRegistry);
+        this.jpaTimer = Timer.builder("fhir.layer.jpa")
+            .description("Time spent in JPA/Hibernate layer")
+            .register(meterRegistry);
+        this.responseTimer = Timer.builder("fhir.layer.response")
+            .description("Time spent in Response layer")
+            .register(meterRegistry);
+        this.totalRequestTimer = Timer.builder("fhir.request.total")
+            .description("Total time for FHIR requests")
+            .register(meterRegistry);
+            
+        // Standard HTTP server request timer (compatible with Spring Boot metrics)
+        this.httpServerRequestsTimer = Timer.builder("http.server.requests")
+            .description("HTTP server request duration")
+            .register(meterRegistry);
+            
+        // Initialize counters
+        this.requestCounter = Counter.builder("fhir.requests.total")
+            .description("Total number of FHIR requests")
+            .register(meterRegistry);
+        this.errorCounter = Counter.builder("fhir.requests.errors")
+            .description("Total number of FHIR request errors")
+            .register(meterRegistry);
+        
         logger.info("✅ Enhanced FHIR Performance Tracing Interceptor initialized");
         System.out.println("✅ Enhanced FHIR Performance Tracing Interceptor initialized");
     }
@@ -432,7 +523,11 @@ public class EnhancedFhirTracingInterceptor {
                 requestDetails.getRequestPath());
             
             // 產生詳細效能報告
-            timings.printPerformanceReport(operationName);
+            timings.printPerformanceReport(operationName, httpRequestTimer, servletTimer, resourceBindingTimer,
+                methodBindingTimer, providerTimer, daoRegistryTimer, daoTimer, jpaTimer, responseTimer, totalRequestTimer, httpServerRequestsTimer);
+            
+            // Increment request counter
+            requestCounter.increment();
         }
         
         if (mainSpan != null) {
@@ -462,7 +557,11 @@ public class EnhancedFhirTracingInterceptor {
                 requestDetails.getRequestPath());
             
             logger.error("❌ Request failed: {}", operationName);
-            timings.printPerformanceReport(operationName + " [FAILED]");
+            timings.printPerformanceReport(operationName + " [FAILED]", httpRequestTimer, servletTimer, resourceBindingTimer,
+                methodBindingTimer, providerTimer, daoRegistryTimer, daoTimer, jpaTimer, responseTimer, totalRequestTimer, httpServerRequestsTimer);
+            
+            // Increment error counter
+            errorCounter.increment();
         }
         
         if (mainSpan != null) {
