@@ -51,8 +51,6 @@ import ca.uhn.fhir.jpa.starter.annotations.OnCorsPresent;
 import ca.uhn.fhir.jpa.starter.annotations.OnImplementationGuidesPresent;
 import ca.uhn.fhir.jpa.starter.common.validation.IRepositoryValidationInterceptorFactory;
 import ca.uhn.fhir.jpa.starter.ig.ExtendedPackageInstallationSpec;
-import ca.uhn.fhir.jpa.starter.tracing.EnhancedFhirTracingInterceptor;
-import ca.uhn.fhir.jpa.starter.tracing.ImprovedFhirTracingInterceptor;
 import ca.uhn.fhir.jpa.starter.ig.IImplementationGuideOperationProvider;
 import ca.uhn.fhir.jpa.subscription.util.SubscriptionDebugLogInterceptor;
 import ca.uhn.fhir.jpa.util.ResourceCountCache;
@@ -336,9 +334,7 @@ public class StarterJpaConfig {
 			ApplicationContext appContext,
 			Optional<IpsOperationProvider> theIpsOperationProvider,
 			Optional<IImplementationGuideOperationProvider> implementationGuideOperationProvider,
-			DiffProvider diffProvider,
-			Optional<EnhancedFhirTracingInterceptor> enhancedTracingInterceptor,
-			Optional<ImprovedFhirTracingInterceptor> improvedTracingInterceptor) {
+			DiffProvider diffProvider) {
 		RestfulServer fhirServer = new RestfulServer(fhirSystemDao.getContext());
 
 		List<String> supportedResourceTypes = appProperties.getSupported_resource_types();
@@ -401,10 +397,6 @@ public class StarterJpaConfig {
 
 		fhirServer.registerInterceptor(loggingInterceptor);
 
-		// Register Enhanced FHIR Performance Tracing Interceptors
-		// Note: Only one should be active at a time - ImprovedFhirTracingInterceptor is recommended for production
-		enhancedTracingInterceptor.ifPresent(fhirServer::registerInterceptor);
-		improvedTracingInterceptor.ifPresent(fhirServer::registerInterceptor);
 
 		implementationGuideOperationProvider.ifPresent(fhirServer::registerProvider);
 

@@ -430,32 +430,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- OpenTelemetry dependencies for tracing -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-            <version>1.32.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk</artifactId>
-            <version>1.32.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-jaeger</artifactId>
-            <version>1.32.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-otlp</artifactId>
-            <version>1.32.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-spring-boot-starter</artifactId>
-            <version>1.32.0-alpha</version>
-        </dependency>
 
     </dependencies>
 
