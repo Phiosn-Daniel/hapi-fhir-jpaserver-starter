@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * 8. JPA/Hibernate (持久化層)
  * 9. Database
  */
-@Component
 @Interceptor
 public class EnhancedFhirTracingInterceptor {
 

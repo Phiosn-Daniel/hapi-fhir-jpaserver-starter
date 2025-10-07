@@ -33,9 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * - Better error handling and span management
  * - Focused on actual measurable layers rather than simulated ones
  */
-@Component
 @Interceptor
-@ConditionalOnProperty(name = "hapi.fhir.tracing.enabled", havingValue = "true", matchIfMissing = false)
 public class ImprovedFhirTracingInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(ImprovedFhirTracingInterceptor.class);

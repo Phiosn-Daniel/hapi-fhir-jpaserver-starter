@@ -28,7 +28,7 @@ public class TracingInterceptorSelector {
     /**
      * Create Enhanced FHIR Tracing Interceptor (detailed analysis with Micrometer)
      */
-    @Bean
+    @Bean("enhancedFhirTracingInterceptor")
     @ConditionalOnProperty(name = "hapi.fhir.tracing.interceptor.type", havingValue = "enhanced", matchIfMissing = true)
     public EnhancedFhirTracingInterceptor enhancedFhirTracingInterceptor(OpenTelemetry openTelemetry, MeterRegistry meterRegistry) {
         logger.info("🔧 Creating Enhanced FHIR Tracing Interceptor for detailed analysis with metrics");
@@ -38,7 +38,7 @@ public class TracingInterceptorSelector {
     /**
      * Create Improved FHIR Tracing Interceptor (production optimized)
      */
-    @Bean
+    @Bean("improvedFhirTracingInterceptor")
     @ConditionalOnProperty(name = "hapi.fhir.tracing.interceptor.type", havingValue = "improved", matchIfMissing = false)
     public ImprovedFhirTracingInterceptor improvedFhirTracingInterceptor(OpenTelemetry openTelemetry) {
         logger.info("🚀 Creating Improved FHIR Tracing Interceptor for production use");
