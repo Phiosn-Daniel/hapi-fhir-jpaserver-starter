@@ -159,21 +159,11 @@ spring:
 
 hapi:
   fhir:
-    ### Enhanced FHIR Performance Tracing Configuration
+    ### Enhanced FHIR Performance Tracing Configuration (Simplified)
     tracing:
-      enabled: true
+      enabled: false  # Set to true to enable tracing
       service-name: hapi-fhir-jpa-server
       service-version: 1.0.0
-      interceptor:
-        type: enhanced  # Options: enhanced (detailed with metrics), improved (production)
-      exporter:
-        type: console  # Options: console, jaeger, otlp
-      metrics:
-        type: simple   # Options: simple, prometheus
-      jaeger:
-        endpoint: http://localhost:14250
-      otlp:
-        endpoint: ""  # Set to your OTLP endpoint if using otlp exporter
     
     ### This flag when enabled to true, will avail evaluate measure operations from CR Module.
     ### Flag is false by default, can be passed as command line argument to override.
