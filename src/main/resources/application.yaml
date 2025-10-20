@@ -159,6 +159,12 @@ spring:
 
 hapi:
   fhir:
+    ### Enhanced FHIR Performance Tracing Configuration (Simplified)
+    tracing:
+      enabled: false  # Set to true to enable tracing
+      service-name: hapi-fhir-jpa-server
+      service-version: 1.0.0
+    
     ### This flag when enabled to true, will avail evaluate measure operations from CR Module.
     ### Flag is false by default, can be passed as command line argument to override.
     cr:

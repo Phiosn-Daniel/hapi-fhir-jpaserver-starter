@@ -397,6 +397,7 @@ public class StarterJpaConfig {
 
 		fhirServer.registerInterceptor(loggingInterceptor);
 
+
 		implementationGuideOperationProvider.ifPresent(fhirServer::registerProvider);
 
 		/*
