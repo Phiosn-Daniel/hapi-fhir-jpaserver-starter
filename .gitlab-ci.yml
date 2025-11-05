@@ -118,10 +118,14 @@ release-tag:
   before_script:
     # 安裝必要工具
     - apk add --no-cache make git bash maven openjdk17
-    # 檢查是否有 tag
+    # 使用 git describe 獲取標籤
+    - export GIT_TAG=$(git describe --tags --always)
     - |
-      if [ -z "$CI_COMMIT_TAG" ]; then
-        echo "ERROR: This job should only run on tags";
+      echo "Git Tag from describe: $GIT_TAG"
+    # 檢查是否成功獲取標籤
+    - |
+      if [ -z "$GIT_TAG" ]; then
+        echo "ERROR: Failed to get git tag";
         exit 1;
       fi
   script:
@@ -129,18 +133,17 @@ release-tag:
       echo "========================================";
       echo "Building and Pushing with Git Tag";
       echo "========================================";
-      echo "Git Tag: $CI_COMMIT_TAG";
+      echo "Git Tag: $GIT_TAG";
       echo "";
-
-      # 使用 Makefile 的 git-tag-build
-      # Makefile 會從環境變數讀取 Harbor 配置
+      # 將 GIT_TAG 傳遞給 Makefile
+      # 你需要確保 Makefile 能接收這個變數
+      export CI_COMMIT_TAG=$GIT_TAG;
       make git-tag-build;
-
       echo "";
       echo "========================================";
       echo "Release completed!";
       echo "========================================";
-      echo "Image pushed to Harbor with tag: ${CI_COMMIT_TAG}";
+      echo "Image pushed to Harbor with tag: ${GIT_TAG}";
   cache:
     key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
     paths:
