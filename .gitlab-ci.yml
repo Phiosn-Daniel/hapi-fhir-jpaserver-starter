@@ -21,6 +21,8 @@ cache:
 download-hapi-dependencies:
   stage: prepare
   image: alpine:latest
+  tags:
+    - prepare
   before_script:
     - apk add --no-cache cifs-utils rsync bash
   script:
@@ -86,6 +88,8 @@ download-hapi-dependencies:
 build:
   stage: build
   image: maven:3.9-eclipse-temurin-17
+  tags:
+    - build
   script:
     - echo "Verifying HAPI FHIR dependencies...";
     - ls -la .m2/repository/ca/uhn/hapi/fhir/ || echo "WARNING: Dependencies not in cache";
@@ -104,6 +108,8 @@ build:
 release-tag:
   stage: release
   image: docker:24
+  tags:
+    - release
   services:
     - docker:24-dind
   variables:
