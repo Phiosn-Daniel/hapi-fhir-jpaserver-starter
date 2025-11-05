@@ -92,7 +92,8 @@ build:
     - build
   script:
     - echo "Verifying HAPI FHIR dependencies...";
-    - ls -la .m2/repository/ca/uhn/hapi/fhir/ || echo "WARNING: Dependencies not in cache";
+    - |
+      ls -la .m2/repository/ca/uhn/hapi/fhir/ || echo "WARNING: Dependencies not in cache";
     - mvn $MAVEN_CLI_OPTS clean compile -DskipTests;
   cache:
     key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
