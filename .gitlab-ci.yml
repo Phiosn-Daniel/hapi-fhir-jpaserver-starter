@@ -1,0 +1,144 @@
+stages:
+  - prepare
+  - build
+  - release
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Xmx2g"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+  CIFS_SHARE: "//172.23.99.220/tic/user/RC/hapi-fhir"
+  CIFS_MOUNT_POINT: "/mnt/shared"
+  HAPI_FHIR_BRANCH: "ci-test"
+  CIFS_USERNAME: "ticagent"
+  CIFS_PASSWORD: "cde#123"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+
+# 從共享資料夾下載依賴
+download-hapi-dependencies:
+  stage: prepare
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache cifs-utils rsync bash
+  script:
+    - |
+      echo "========================================";
+      echo "Downloading HAPI FHIR dependencies";
+      echo "========================================";
+
+      mkdir -p $CIFS_MOUNT_POINT;
+
+      # 掛載共享資料夾
+      mount -t cifs "$CIFS_SHARE" $CIFS_MOUNT_POINT \
+        -o username=$CIFS_USERNAME,password=$CIFS_PASSWORD,vers=3.0,ro;
+
+      if ! mountpoint -q $CIFS_MOUNT_POINT; then
+        echo "ERROR: Failed to mount CIFS share";
+        exit 1;
+      fi;
+
+      echo "? Successfully mounted $CIFS_SHARE";
+
+      LATEST_DIR="$CIFS_MOUNT_POINT/latest/$HAPI_FHIR_BRANCH";
+
+      if [ ! -d "$LATEST_DIR/maven-repo" ]; then
+        echo "ERROR: HAPI FHIR dependencies not found";
+        exit 1;
+      fi;
+
+      if [ -f "$LATEST_DIR/build-info.txt" ]; then
+        echo "";
+        echo "========================================";
+        echo "Using HAPI FHIR build:";
+        echo "========================================";
+        cat "$LATEST_DIR/build-info.txt";
+        echo "========================================";
+      fi;
+
+      echo "Downloading dependencies...";
+      mkdir -p .m2/repository/ca/uhn/hapi/fhir;
+
+      rsync -av --progress \
+        "$LATEST_DIR/maven-repo/" \
+        .m2/repository/ca/uhn/hapi/fhir/;
+
+      DOWNLOADED_SIZE=$(du -sh .m2/repository/ca/uhn/hapi/fhir | cut -f1);
+      FILE_COUNT=$(find .m2/repository/ca/uhn/hapi/fhir -type f | wc -l);
+
+      echo "Downloaded $FILE_COUNT files, total size: $DOWNLOADED_SIZE";
+
+      umount $CIFS_MOUNT_POINT;
+      echo "Unmounted CIFS share";
+  cache:
+    key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
+    paths:
+      - .m2/repository/ca/uhn/hapi/fhir/
+    policy: push
+  only:
+    - main
+    - develop
+    - tags
+    - web
+
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - echo "Verifying HAPI FHIR dependencies...";
+    - ls -la .m2/repository/ca/uhn/hapi/fhir/ || echo "WARNING: Dependencies not in cache";
+    - mvn $MAVEN_CLI_OPTS clean compile -DskipTests;
+  cache:
+    key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
+    paths:
+      - .m2/repository/ca/uhn/hapi/fhir/
+    policy: pull
+  only:
+    - main
+    - develop
+    - tags
+    - web
+
+release-tag:
+  stage: release
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    # 安裝必要工具
+    - apk add --no-cache make git bash maven openjdk17
+    # 檢查是否有 tag
+    - |
+      if [ -z "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: This job should only run on tags";
+        exit 1;
+      fi
+  script:
+    - |
+      echo "========================================";
+      echo "Building and Pushing with Git Tag";
+      echo "========================================";
+      echo "Git Tag: $CI_COMMIT_TAG";
+      echo "";
+
+      # 使用 Makefile 的 git-tag-build
+      # Makefile 會從環境變數讀取 Harbor 配置
+      make git-tag-build;
+
+      echo "";
+      echo "========================================";
+      echo "Release completed!";
+      echo "========================================";
+      echo "Image pushed to Harbor with tag: ${CI_COMMIT_TAG}";
+  cache:
+    key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
+    paths:
+      - .m2/repository/ca/uhn/hapi/fhir/
+    policy: pull
+  only:
+    - develop
+    - web

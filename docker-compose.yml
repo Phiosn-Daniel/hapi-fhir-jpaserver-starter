@@ -1,25 +1,82 @@
-version: "3"
+# This is a docker-compose file for HAPI FHIR JPA Server, with a database
+# and an OpenTelemetry/Jaeger/Prometheus stack for observability.
+version: "3.8"
 services:
-  hapi-fhir-jpaserver-start:
-    build: .
-    container_name: hapi-fhir-jpaserver-start
+  hapi-fhir-jpaserver-start-1:
+    image: harbor.phison.com/fhir/hapi-fhir:{HAPI_VERSION}
+    pull_policy: always
+    container_name: hapi-fhir-starter-1
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '15.0'
+          memory: 15G
+        reservations:
+          cpus: '15.0'
+          memory: 15G
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://hapi-fhir-postgres:5432/hapi"
-      SPRING_DATASOURCE_USERNAME: "admin"
-      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.204:5433/hapi"
+      SPRING_DATASOURCE_USERNAME: "hapipoc"
+      SPRING_DATASOURCE_PASSWORD: "hapipoc"
       SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
     ports:
       - "8080:8080"
-  hapi-fhir-postgres:
-    image: postgres:15-alpine
-    container_name: hapi-fhir-postgres
-    restart: always
+    depends_on:
+      jaeger:
+        condition: service_started
+  
+  hapi-fhir-jpaserver-start-2:
+    image: harbor.phison.com/fhir/hapi-fhir:{HAPI_VERSION}
+    pull_policy: always
+    container_name: hapi-fhir-starter-2
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '15.0'
+          memory: 15G
+        reservations:
+          cpus: '15.0'
+          memory: 15G
     environment:
-      POSTGRES_DB: "hapi"
-      POSTGRES_USER: "admin"
-      POSTGRES_PASSWORD: "admin"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.204:5433/hapi"
+      SPRING_DATASOURCE_USERNAME: "hapipoc"
+      SPRING_DATASOURCE_PASSWORD: "hapipoc"
+      SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+    ports:
+      - "8081:8080"
+    depends_on:
+      jaeger:
+        condition: service_started
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "14250:14250" # Collector gRPC
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "18080:8080" # cAdvisor's Web UI (optional)
     volumes:
-      - hapi-fhir-postgres:/var/lib/postgresql/data
-volumes:
-  hapi-fhir-postgres:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+
+networks:
+  hapi-fhir-jpaserver-starter_default:
+    external: true
