@@ -96,7 +96,6 @@ release-tag:
     DOCKER_TLS_CERTDIR: "/certs"
     HARBOR_HOST: "habor.phison.com"
     DOCKER_HOST: "tcp://docker:2376"
-    DOCKER_CERT_PATH: "/certs/client"
     DOCKER_TLS_VERIFY: 1
   before_script:
     # 安裝必要工具
