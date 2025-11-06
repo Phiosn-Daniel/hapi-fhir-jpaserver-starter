@@ -93,6 +93,7 @@ release-tag:
   services:
     - docker:24-dind
   variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
     HARBOR_HOST: "habor.phison.com"
     DOCKER_TLS_VERIFY: 1
   before_script:
@@ -103,6 +104,9 @@ release-tag:
     - cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.crt
     - update-ca-certificates
     - ls -la /etc/docker/certs.d/${HARBOR_HOST}/
+    - rm -rf /root/.docker
+    - docker info
+    - docker version
     - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
     # 使用 git describe 獲取標籤
     - export GIT_TAG=$(git describe --tags --always)
