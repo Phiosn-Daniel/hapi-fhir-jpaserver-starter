@@ -95,7 +95,8 @@ release-tag:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
     HARBOR_HOST: "habor.phison.com"
-    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_HOST: "tcp://docker:2376"
+    DOCKER_TLS_VERIFY: 1
   before_script:
     # 安裝必要工具
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
@@ -105,7 +106,6 @@ release-tag:
     - update-ca-certificates
     - ls -la /etc/docker/certs.d/${HARBOR_HOST}/
     - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
-
     # 使用 git describe 獲取標籤
     - export GIT_TAG=$(git describe --tags --always)
     - |
@@ -117,6 +117,7 @@ release-tag:
         exit 1;
       fi
   script:
+    - until docker info; do sleep 1; done
     - |
       echo "========================================";
       echo "Building and Pushing with Git Tag";
