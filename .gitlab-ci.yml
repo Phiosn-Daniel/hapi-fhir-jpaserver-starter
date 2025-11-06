@@ -96,7 +96,6 @@ release-tag:
     DOCKER_TLS_CERTDIR: "/certs"
     HARBOR_HOST: "habor.phison.com"
     DOCKER_HOST: "tcp://docker:2375"
-    DOCKER_TLS_CERTDIR: ""
   before_script:
     # 安裝必要工具
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
