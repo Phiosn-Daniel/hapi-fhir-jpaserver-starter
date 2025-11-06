@@ -1,6 +1,6 @@
 stages:
   - prepare
-  - build
+  #- build
   - release
 
 variables:
@@ -85,27 +85,6 @@ download-hapi-dependencies:
     - tags
     - web
 
-build:
-  stage: build
-  image: maven:3.9-eclipse-temurin-17
-  tags:
-    - build
-  script:
-    - echo "Verifying HAPI FHIR dependencies...";
-    - |
-      ls -la .m2/repository/ca/uhn/hapi/fhir/ || echo "WARNING: Dependencies not in cache";
-    - mvn $MAVEN_CLI_OPTS clean compile -DskipTests;
-  cache:
-    key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
-    paths:
-      - .m2/repository/ca/uhn/hapi/fhir/
-    policy: pull
-  only:
-    - main
-    - develop
-    - tags
-    - web
-
 release-tag:
   stage: release
   image: docker:24
@@ -116,6 +95,8 @@ release-tag:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
     HARBOR_HOST: "habor.phison.com"
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     # 安裝必要工具
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
