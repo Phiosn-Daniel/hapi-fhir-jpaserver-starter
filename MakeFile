@@ -142,7 +142,7 @@ openssl:
 # 安裝 Go
 install-go:
 		@echo "正在下載 Go $(GO_VERSION)..."
-        wget -q --show-progress $(GO_URL) -O /tmp/$(GO_ARCHIVE)
+		wget -q --show-progress $(GO_URL) -O /tmp/$(GO_ARCHIVE)
 
         @echo "正在解壓縮 Go 檔案..."
         sudo tar -C /usr/local -xzf /tmp/$(GO_ARCHIVE)
