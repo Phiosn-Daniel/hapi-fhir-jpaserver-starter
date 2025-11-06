@@ -124,7 +124,7 @@ release-tag:
     - cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.crt
     - update-ca-certificates
     - ls -la /etc/docker/certs.d/${HARBOR_HOST}/
-    - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
+    - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.cert
 
     # 使用 git describe 獲取標籤
     - export GIT_TAG=$(git describe --tags --always)
