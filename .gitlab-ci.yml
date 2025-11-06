@@ -109,10 +109,10 @@ release-tag:
 
 
     - rm -rf /root/.docker
-    - docker info
+    - until docker info; do sleep 1; done
     - docker version
     - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
-    
+
     # 使用 git describe 獲取標籤
     - export GIT_TAG=$(git describe --tags --always)
     - |
