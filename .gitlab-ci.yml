@@ -95,7 +95,7 @@ release-tag:
   variables:
     DOCKER_HOST: "unix:///var/run/docker.sock"
     HARBOR_HOST: "habor.phison.com"
-    DOCKER_TLS_VERIFY: 1
+    DOCKER_TLS_VERIFY: 0
   before_script:
     # 安裝必要工具
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
