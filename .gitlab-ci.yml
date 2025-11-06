@@ -118,7 +118,6 @@ release-tag:
         exit 1;
       fi
   script:
-    - until docker info; do sleep 1; done
     - |
       echo "========================================";
       echo "Building and Pushing with Git Tag";
