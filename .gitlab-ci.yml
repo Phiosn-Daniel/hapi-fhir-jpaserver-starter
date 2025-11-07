@@ -47,9 +47,8 @@ download-hapi-dependencies:
       FILE_COUNT=$(find ~/.m2/repository/ca/uhn/hapi/fhir -type f | wc -l);
 
       echo "Downloaded $FILE_COUNT files, total size: $DOWNLOADED_SIZE";
-      - export GIT_TAG=$(git describe --tags --always)
-      - |
-        echo "Git Tag from describe: $GIT_TAG"
+      export GIT_TAG=$(git describe --tags --always)
+      echo "Git Tag from describe: $GIT_TAG"
       - |
         echo "========================================";
         echo "Building and Pushing with Git Tag";
