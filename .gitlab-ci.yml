@@ -111,8 +111,8 @@ release-tag:
     #- ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
     #- cp $DOCKER_CA_CERT /certs/client/ca.pem
-    - systemctl daemon-reexec
-    - systemctl restart docker
+    #- systemctl daemon-reexec
+    #- systemctl restart docker
     - docker info
     - docker version
     #- cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
