@@ -49,19 +49,19 @@ download-hapi-dependencies:
       echo "Downloaded $FILE_COUNT files, total size: $DOWNLOADED_SIZE";
       export GIT_TAG=$(git describe --tags --always)
       echo "Git Tag from describe: $GIT_TAG"
-      - |
-        echo "========================================";
-        echo "Building and Pushing with Git Tag";
-        echo "========================================";
-        echo "Git Tag: $GIT_TAG";
-        echo "";
-        export CI_COMMIT_TAG=$GIT_TAG;
-        make git-tag-build;
-        echo "";
-        echo "========================================";
-        echo "Release completed!";
-        echo "========================================";
-        echo "Image pushed to Harbor with tag: ${GIT_TAG}";
+      
+      echo "========================================";
+      echo "Building and Pushing with Git Tag";
+      echo "========================================";
+      echo "Git Tag: $GIT_TAG";
+      echo "";
+      export CI_COMMIT_TAG=$GIT_TAG;
+      make git-tag-build;
+      echo "";
+      echo "========================================";
+      echo "Release completed!";
+      echo "========================================";
+      echo "Image pushed to Harbor with tag: ${GIT_TAG}";
   only:
     - main
     - develop
