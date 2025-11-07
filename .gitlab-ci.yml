@@ -105,9 +105,9 @@ release-tag:
     - docker info
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
     #- mkdir -p /etc/docker/certs.d/${HARBOR_HOST}
-    #- cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
+    - cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
     #- cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.crt
-    #- update-ca-certificates
+    - update-ca-certificates
     #- ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
     #- cp $DOCKER_CA_CERT /certs/client/ca.pem
