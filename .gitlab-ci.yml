@@ -19,11 +19,10 @@ cache:
 # 從共享資料夾下載依賴
 download-hapi-dependencies:
   stage: prepare
-  image: alpine:latest
   tags:
     - prepare
   before_script:
-    - apk add --no-cache cifs-utils rsync bash
+    - apt-get install cifs-utils rsync bash -y
   script:
     - |
       echo "========================================";
@@ -86,31 +85,18 @@ download-hapi-dependencies:
 
 release-tag:
   stage: release
-  image: 
-    name: docker:28-dind
-    pull_policy: if-not-present
   tags:
     - release
-  services:
-    - name: docker:28-dind
-      pull_policy: if-not-present
-  variables:
-    DOCKER_HOST: tcp://docker:2376/
-    DOCKER_TLS_CERTDIR: "/certs"
-    HARBOR_HOST: "habor.phison.com"
-    DOCKER_TLS_VERIFY: 1
-    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
-    # 安裝必要工具
-    - apk add --no-cache make git bash maven openjdk17 ca-certificates
-    - mkdir -p /etc/docker/certs.d/${HARBOR_HOST}
-    - cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.pem
-    - cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.pem
-    - cp $HARBOR_CA_CERT ${DOCKER_CERT_PATH}/harbor.pem
+    #- apt-get install openjdk17 ca-certificates
+    #- mkdir -p /etc/docker/certs.d/${HARBOR_HOST}
+    #- cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.pem
+    #- cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.pem
+    #- cp $HARBOR_CA_CERT ${DOCKER_CERT_PATH}/harbor.pem
     #- cat $HARBOR_CA_CERT ${DOCKER_CERT_PATH}/ca.pem > temp.pem
     #- mv temp.pem ${DOCKER_CERT_PATH}/ca.pem
     #- cat ${DOCKER_CERT_PATH}/ca.pem
-    - update-ca-certificates
+    #- update-ca-certificates
     #- ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
     #- cp $DOCKER_CA_CERT /certs/client/ca.pem
