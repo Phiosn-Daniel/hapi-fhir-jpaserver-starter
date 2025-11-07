@@ -46,7 +46,7 @@ download-hapi-dependencies:
       echo "Downloading dependencies...";
       sudo mkdir -p .m2/repository/ca/uhn/hapi/fhir;
 
-      rsync -av --progress \
+      sudo rsync -av --progress \
         "$LATEST_DIR/maven-repo/" \
         .m2/repository/ca/uhn/hapi/fhir/;
 
@@ -55,7 +55,6 @@ download-hapi-dependencies:
 
       echo "Downloaded $FILE_COUNT files, total size: $DOWNLOADED_SIZE";
 
-      umount $CIFS_MOUNT_POINT;
       echo "Unmounted CIFS share";
   cache:
     key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
