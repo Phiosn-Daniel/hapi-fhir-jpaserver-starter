@@ -1,6 +1,6 @@
 stages:
-  - prepare
-  #- build
+  - build
+  - prepare  
   - release
 
 variables:
@@ -85,13 +85,29 @@ download-hapi-dependencies:
     - tags
     - web
 
+build:
+  tags:
+    - build
+  image: 
+    name: docker:latest
+    pull_policy: if-not-present  # Add this
+  services:
+    - name: docker:dind
+      pull_policy: if-not-present  # Add this
+  script:
+    - docker info
+
+
 release-tag:
   stage: release
-  image: docker:28-dind
+  image: 
+    name: docker:28-dind
+    pull_policy: if-not-present
   tags:
     - release
   services:
-    - docker:28-dind
+    - name: docker:28-dind
+      pull_policy: if-not-present
   variables:
     DOCKER_HOST: tcp://docker:2376/
     DOCKER_TLS_CERTDIR: "/certs"
