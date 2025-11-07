@@ -26,6 +26,7 @@ download-hapi-dependencies:
       echo "Downloading HAPI FHIR dependencies";
       echo "========================================";
 
+      LATEST_DIR="$CIFS_MOUNT_POINT/latest/$HAPI_FHIR_BRANCH";
       if [ -f "$LATEST_DIR/build-info.txt" ]; then
         echo "";
         echo "========================================";
@@ -62,11 +63,6 @@ download-hapi-dependencies:
         echo "Release completed!";
         echo "========================================";
         echo "Image pushed to Harbor with tag: ${GIT_TAG}";
-  cache:
-    key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
-    paths:
-      - .m2/repository/ca/uhn/hapi/fhir/
-    policy: push
   only:
     - main
     - develop
