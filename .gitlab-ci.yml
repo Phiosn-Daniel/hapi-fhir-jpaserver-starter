@@ -27,19 +27,6 @@ download-hapi-dependencies:
       echo "Downloading HAPI FHIR dependencies";
       echo "========================================";
 
-      mkdir -p $CIFS_MOUNT_POINT;
-
-      # 掛載共享資料夾
-      mount -t cifs "$CIFS_SHARE" $CIFS_MOUNT_POINT \
-        -o username=$CIFS_USERNAME,password=$CIFS_PASSWORD,vers=3.0,ro;
-
-      if ! mountpoint -q $CIFS_MOUNT_POINT; then
-        echo "ERROR: Failed to mount CIFS share";
-        exit 1;
-      fi;
-
-      echo "? Successfully mounted $CIFS_SHARE";
-
       LATEST_DIR="$CIFS_MOUNT_POINT/latest/$HAPI_FHIR_BRANCH";
 
       if [ ! -d "$LATEST_DIR/maven-repo" ]; then
@@ -57,7 +44,7 @@ download-hapi-dependencies:
       fi;
 
       echo "Downloading dependencies...";
-      mkdir -p .m2/repository/ca/uhn/hapi/fhir;
+      sudo mkdir -p .m2/repository/ca/uhn/hapi/fhir;
 
       rsync -av --progress \
         "$LATEST_DIR/maven-repo/" \
