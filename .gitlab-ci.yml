@@ -86,6 +86,7 @@ download-hapi-dependencies:
     - web
 
 build:
+  stage: build
   tags:
     - build
   image: 
