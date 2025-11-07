@@ -21,9 +21,6 @@ download-hapi-dependencies:
   stage: prepare
   tags:
     - prepare
-  before_script:
-    - whoami
-    - apt-get install cifs-utils rsync bash -y
   script:
     - |
       echo "========================================";
