@@ -36,9 +36,9 @@ download-hapi-dependencies:
       fi;
 
       echo "Downloading dependencies...";
-      sudo mkdir -p ~/.m2/repository/ca/uhn/hapi/fhir;
+      mkdir -p ~/.m2/repository/ca/uhn/hapi/fhir;
 
-      sudo rsync -av --progress \
+      rsync -av --progress \
         "$LATEST_DIR/maven-repo/" \
         ~/.m2/repository/ca/uhn/hapi/fhir/;
 
