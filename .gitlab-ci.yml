@@ -106,6 +106,7 @@ release-tag:
     - mkdir -p /etc/docker/certs.d/${HARBOR_HOST}
     - cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
     - cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.crt
+    - cp $HARBOR_CA_CERT {DOCKER_CERT_PATH}/harbor.crt
     - update-ca-certificates
     #- ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
