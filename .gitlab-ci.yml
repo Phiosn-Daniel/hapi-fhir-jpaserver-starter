@@ -21,18 +21,15 @@ download-hapi-dependencies:
   stage: prepare
   tags:
     - prepare
+  variables:
+    USER: root
+  before_script:
+    - whoami
   script:
     - |
       echo "========================================";
       echo "Downloading HAPI FHIR dependencies";
       echo "========================================";
-
-      LATEST_DIR="$CIFS_MOUNT_POINT/latest/$HAPI_FHIR_BRANCH";
-
-      if [ ! -d "$LATEST_DIR/maven-repo" ]; then
-        echo "ERROR: HAPI FHIR dependencies not found";
-        exit 1;
-      fi;
 
       if [ -f "$LATEST_DIR/build-info.txt" ]; then
         echo "";
