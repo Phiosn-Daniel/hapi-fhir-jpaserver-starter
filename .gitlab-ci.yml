@@ -11,6 +11,11 @@ variables:
   CIFS_USERNAME: "ticagent"
   CIFS_PASSWORD: "cde#123"
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+
 # 從共享資料夾下載依賴
 download-hapi-dependencies:
   stage: prepare
@@ -36,18 +41,32 @@ download-hapi-dependencies:
       fi;
 
       echo "Downloading dependencies...";
-      sudo mkdir -p .m2/repository/ca/uhn/hapi/fhir;
+      sudo mkdir -p ~/.m2/repository/ca/uhn/hapi/fhir;
 
       sudo rsync -av --progress \
         "$LATEST_DIR/maven-repo/" \
-        .m2/repository/ca/uhn/hapi/fhir/;
+        ~/.m2/repository/ca/uhn/hapi/fhir/;
 
-      DOWNLOADED_SIZE=$(du -sh .m2/repository/ca/uhn/hapi/fhir | cut -f1);
-      FILE_COUNT=$(find .m2/repository/ca/uhn/hapi/fhir -type f | wc -l);
+      DOWNLOADED_SIZE=$(du -sh ~/.m2/repository/ca/uhn/hapi/fhir | cut -f1);
+      FILE_COUNT=$(find ~/.m2/repository/ca/uhn/hapi/fhir -type f | wc -l);
 
       echo "Downloaded $FILE_COUNT files, total size: $DOWNLOADED_SIZE";
-
-      echo "Unmounted CIFS share";
+      - export GIT_TAG=$(git describe --tags --always)
+      - |
+        echo "Git Tag from describe: $GIT_TAG"
+      - |
+        echo "========================================";
+        echo "Building and Pushing with Git Tag";
+        echo "========================================";
+        echo "Git Tag: $GIT_TAG";
+        echo "";
+        export CI_COMMIT_TAG=$GIT_TAG;
+        make git-tag-build;
+        echo "";
+        echo "========================================";
+        echo "Release completed!";
+        echo "========================================";
+        echo "Image pushed to Harbor with tag: ${GIT_TAG}";
   cache:
     key: "hapi-fhir-deps-${HAPI_FHIR_BRANCH}"
     paths:
