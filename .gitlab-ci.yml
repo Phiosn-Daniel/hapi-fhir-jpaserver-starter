@@ -107,8 +107,7 @@ release-tag:
     - update-ca-certificates
     - ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
-
-    - rm -rf /root/.docker
+    - cp $DOCKER_CA_CERT /certs/client/ca.pem
     - until docker info; do sleep 1; done
     - docker version
     - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
