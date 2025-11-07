@@ -1,5 +1,4 @@
 stages:
-  - build
   - prepare  
   - release
 
@@ -85,20 +84,6 @@ download-hapi-dependencies:
     - tags
     - web
 
-build:
-  stage: build
-  tags:
-    - build
-  image: 
-    name: docker:latest
-    pull_policy: if-not-present  # Add this
-  services:
-    - name: docker:dind
-      pull_policy: if-not-present  # Add this
-  script:
-    - docker info
-
-
 release-tag:
   stage: release
   image: 
@@ -128,7 +113,7 @@ release-tag:
     #- cp $DOCKER_CA_CERT /certs/client/ca.pem
     - docker info
     - docker version
-    - cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
+    #- cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
 
     # 使用 git describe 獲取標籤
     - export GIT_TAG=$(git describe --tags --always)
