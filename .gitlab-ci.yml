@@ -112,8 +112,8 @@ release-tag:
     #- cp $DOCKER_CA_CERT /certs/client/ca.pem
     #- systemctl daemon-reexec
     #- systemctl restart docker
-    - docker info
-    - docker version
+    #- docker info
+    #- docker version
     #- cat /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
 
     # 使用 git describe 獲取標籤
@@ -127,6 +127,7 @@ release-tag:
         exit 1;
       fi
   script:
+    - update-ca-certificates
     - |
       echo "========================================";
       echo "Building and Pushing with Git Tag";
