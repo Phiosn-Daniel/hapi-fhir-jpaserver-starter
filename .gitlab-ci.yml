@@ -22,7 +22,8 @@ download-hapi-dependencies:
   tags:
     - prepare
   before_script:
-    - apt-get install cifs-utils rsync bash -y
+    - whoami
+    - sudo apt-get install cifs-utils rsync bash -y
   script:
     - |
       echo "========================================";
