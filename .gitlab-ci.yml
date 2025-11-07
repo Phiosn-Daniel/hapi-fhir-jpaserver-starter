@@ -108,6 +108,7 @@ release-tag:
     - cp $HARBOR_CA_CERT /usr/local/share/ca-certificates/harbor.crt
     - cat $HARBOR_CA_CERT ${DOCKER_CERT_PATH}/ca.pem > temp.pem
     - mv temp.pem ${DOCKER_CERT_PATH}/ca.pem
+    - cat ${DOCKER_CERT_PATH}/ca.pem
     - update-ca-certificates
     #- ls -la /etc/docker/certs.d/${HARBOR_HOST}/
 
