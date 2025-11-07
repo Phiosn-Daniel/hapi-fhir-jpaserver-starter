@@ -117,6 +117,7 @@ release-tag:
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
     # 安裝必要工具
+    - docker info
     - apk add --no-cache make git bash maven openjdk17 ca-certificates
     - mkdir -p /etc/docker/certs.d/${HARBOR_HOST}
     - cp $HARBOR_CA_CERT /etc/docker/certs.d/${HARBOR_HOST}/ca.crt
