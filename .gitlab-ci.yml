@@ -11,11 +11,6 @@ variables:
   CIFS_USERNAME: "ticagent"
   CIFS_PASSWORD: "cde#123"
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .m2/repository
-
 # 從共享資料夾下載依賴
 download-hapi-dependencies:
   stage: prepare
