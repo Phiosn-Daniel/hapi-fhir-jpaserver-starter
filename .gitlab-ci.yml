@@ -87,7 +87,7 @@ download-hapi-dependencies:
 
 release-tag:
   stage: release
-  image: docker:28
+  image: docker:28-dind
   tags:
     - release
   services:
