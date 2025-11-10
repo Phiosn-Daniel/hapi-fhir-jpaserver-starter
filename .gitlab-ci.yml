@@ -1,6 +1,6 @@
 stages:
-  - prepare  
   - release
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Xmx2g"
@@ -12,14 +12,12 @@ variables:
   CIFS_PASSWORD: "cde#123"
 
 
-download-hapi-dependencies:
-  stage: prepare
+build-and-push-image-to-harbor:
+  stage: release
   tags:
-    - prepare
+    - build
   variables:
     USER: root
-  before_script:
-    - whoami
   script:
     - |
       echo "========================================";
@@ -63,7 +61,18 @@ download-hapi-dependencies:
       echo "========================================";
       echo "Image pushed to Harbor with tag: ${GIT_TAG}";
   only:
-    - main
-    - develop
+    - tags
+    - web
+
+auto-deploy:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - cd ~/cd
+    - export VERSION=$(git describe --tags --always)
+    - docker compose dwon
+    - docker compose up -d
+  only:
     - tags
     - web
