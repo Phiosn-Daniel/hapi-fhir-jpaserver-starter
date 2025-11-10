@@ -71,7 +71,7 @@ auto-deploy:
   script:
     - cd ~/cd
     - export VERSION=$(git describe --tags --always)
-    - docker compose dwon
+    - docker compose down
     - docker compose up -d
   only:
     - tags
