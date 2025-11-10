@@ -3,14 +3,10 @@ stages:
   - deploy
 
 variables:
-  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Xmx2g"
-  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
-  CIFS_SHARE: "//172.23.99.220/tic/user/RC/hapi-fhir"
   CIFS_MOUNT_POINT: "/mnt/shared"
-  HAPI_FHIR_BRANCH: "ci-test"
   CIFS_USERNAME: "ticagent"
   CIFS_PASSWORD: "cde#123"
-
+  HAPI_FHIR_BRANCH: "ci-test"
 
 build-and-push-image-to-harbor:
   stage: release
