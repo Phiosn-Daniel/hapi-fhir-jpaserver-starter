@@ -24,7 +24,7 @@
     </parent>
 
     <artifactId>hapi-fhir-jpaserver-starter</artifactId>
-    <version>8.7.0-SNAPSHOT-${hapi.fhir.jpa.server.starter.revision}</version>
+    <version>8.7.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <prerequisites>
@@ -79,6 +79,18 @@
           <artifactId>mssql-jdbc</artifactId>
         </dependency>
 
+         <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>org.hl7.fhir.utilities</artifactId>
+            <version>6.6.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-net</groupId>
+                    <artifactId>commons-net</artifactId>
+                </exclusion>
+            </exclusions>
+		</dependency>
+        
         <!-- Needed for Email subscriptions -->
         <dependency>
             <groupId>org.simplejavamail</groupId>
