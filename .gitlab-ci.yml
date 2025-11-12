@@ -8,6 +8,7 @@ variables:
   CIFS_USERNAME: "ticagent"
   CIFS_PASSWORD: "cde#123"
   HAPI_FHIR_BRANCH: "ci-test"
+  TESTS_NUMBER: 500
 
 build-and-push-image-to-harbor:
   stage: release
@@ -80,7 +81,7 @@ auto-test:
     - test
   script:
     - cd ~/fhir-server-performance-test-suite
-    - java -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions output/fhir/ "http://192.168.197.205:8081/fhir,http://192.168.197.205:8080/fhir" "admin:admin" 100 true
+    - java -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions output/test/${TESTS_NUMBER} "http://192.168.197.205:8081/fhir,http://192.168.197.205:8080/fhir" "admin:admin" 100 true
   only:
     - tags
     - web
