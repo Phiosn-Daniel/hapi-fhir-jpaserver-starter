@@ -62,10 +62,10 @@ build-and-push-image-to-harbor:
     - tags
     - web
 
-auto-deploy:
+auto-deploy-1:
   stage: deploy
   tags:
-    - deploy
+    - deploy-1
   script:
     - export VERSION=$(git describe --tags --always)
     - cd ~/cd
@@ -74,6 +74,20 @@ auto-deploy:
   only:
     - tags
     - web
+
+auto-deploy-2:
+  stage: deploy
+  tags:
+    - deploy-2
+  script:
+    - export VERSION=$(git describe --tags --always)
+    - cd ~/cd
+    - docker compose down
+    - docker compose up -d
+  only:
+    - tags
+    - web
+
 
 auto-test:
   stage: test
