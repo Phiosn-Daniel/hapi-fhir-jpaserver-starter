@@ -98,7 +98,7 @@ spring:
     driver-class-name: org.h2.Driver
     # max-active: 15     # (ignored with HikariCP; use hikari.maximum-pool-size)
     hikari:
-      maximum-pool-size: 200
+      maximum-pool-size: 50
 
   jpa:
     properties:
