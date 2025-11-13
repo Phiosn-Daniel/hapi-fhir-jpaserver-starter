@@ -81,7 +81,7 @@ auto-test:
     - test
   script:
     - cd ~/fhir-server-performance-test-suite
-    - java -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions output/test/${TESTS_NUMBER} "http://192.168.197.205:8081/fhir,http://192.168.197.205:8080/fhir" "admin:admin" 100 true
+    - java -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions output/tests/${TESTS_NUMBER} "http://192.168.197.205:8081/fhir,http://192.168.197.205:8080/fhir" "admin:admin" 100 true
   only:
     - tags
     - web
