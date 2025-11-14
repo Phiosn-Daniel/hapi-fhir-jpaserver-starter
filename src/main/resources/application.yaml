@@ -162,7 +162,12 @@ hapi:
     ig_runtime_upload_enabled: false
     # validate_resource_status_for_package_upload: false   # default true
     # install_transitive_ig_dependencies: true
-    # implementationguides:
+    implementationguides:
+      us_core:
+        name: hl7.fhir.us.core
+        version: 6.1.0
+        installMode: STORE_AND_INSTALL
+        reloadExisting: false
     #   swiss:
     #     name: swiss.mednet.fhir
     #     version: 0.8.0
