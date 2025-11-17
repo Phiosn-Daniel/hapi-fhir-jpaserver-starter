@@ -162,12 +162,12 @@ hapi:
     #ig_runtime_upload_enabled: false
     # validate_resource_status_for_package_upload: false   # default true
     #install_transitive_ig_dependencies: true
-    #implementationguides:
-    #  us_core:
-    #    name: hl7.fhir.us.core
-    #    version: 6.1.0
-    #    installMode: STORE_AND_INSTALL
-    #    reloadExisting: false
+    implementationguides:
+      us_core:
+        name: hl7.fhir.us.core
+        version: 6.1.0
+        installMode: STORE_AND_INSTALL
+        reloadExisting: false
     #   swiss:
     #     name: swiss.mednet.fhir
     #     version: 0.8.0
@@ -268,7 +268,7 @@ hapi:
     # allow_contains_searches: true
     # allow_external_references: true
     # allow_multiple_delete: true
-    # allow_override_default_search_params: true
+    allow_override_default_search_params: true
     # auto_create_placeholder_reference_targets: true
     # mass_ingestion_mode_enabled: true
     # auto_version_reference_at_paths: Device.patient, Device.location, Device.parent, DeviceMetric.parent, DeviceMetric.source, Observation.device, Observation.subject
