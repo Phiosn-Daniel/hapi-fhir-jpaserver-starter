@@ -7,13 +7,13 @@ RUN curl -k -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumen
 COPY m2-cache /root/.m2
 COPY pom.xml .
 COPY server.xml .
-RUN mvn -ntp dependency:go-offline -nsu
+RUN mvn -ntp dependency:go-offline
 
 COPY src/ /tmp/hapi-fhir-jpaserver-starter/src/
-RUN mvn clean install -DskipTests -Djdk.lang.Process.launchMechanism=vfork -nsu
+RUN mvn clean install -DskipTests -Djdk.lang.Process.launchMechanism=vfork
 
 FROM build-hapi AS build-distroless
-RUN mvn package -DskipTests spring-boot:repackage -Pboot -nsu
+RUN mvn package -DskipTests spring-boot:repackage -Pboot
 RUN mkdir /app && cp /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war
 
 
