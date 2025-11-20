@@ -38,18 +38,27 @@ COPY --from=build-hapi --chown=1001:1001 /tmp/hapi-fhir-jpaserver-starter/opente
 ENV ALLOW_EMPTY_PASSWORD=yes
 
 ########### distroless brings focus on security and runs on plain spring boot - this is the default image
-FROM gcr.io/distroless/java17-debian12:nonroot AS default
-# 65532 is the nonroot user's uid
-# used here instead of the name to allow Kubernetes to easily detect that the container
-# is running as a non-root (uid != 0) user.
-USER 65532:65532
-WORKDIR /app
+FROM eclipse-temurin:17-jre AS default
 
+# 安裝 curl 用於健康檢查
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --chown=nonroot:nonroot --from=build-distroless /app /app
-COPY --chown=nonroot:nonroot --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
+# 創建非 root 用戶
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# 複製應用程式
+COPY --chown=appuser:appuser --from=build-distroless /app /app
+COPY --chown=appuser:appuser --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
+
+# 切換到非 root 用戶
+USER appuser
+
+# 加入健康檢查
+HEALTHCHECK --interval=10s --timeout=10s --start-period=60s --retries=10 \
+    CMD curl -f http://localhost:8080/fhir/metadata || exit 1
 
 ENTRYPOINT ["java", "--class-path", "/app/main.war", "-XX:MaxRAMPercentage=80.0","-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
