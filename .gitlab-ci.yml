@@ -42,8 +42,8 @@ auto-deploy-1:
   script:
     - export VERSION=$(git describe --tags --always)
     - cd ~/cd
-    - docker compose down
-    - docker compose up -d
+    - docker compose -f ${DOCKER_COMPOSE_FILE} down
+    - docker compose -f ${DOCKER_COMPOSE_FILE} up -d
   only:
     - tags
     - web
@@ -55,8 +55,8 @@ auto-deploy-2:
   script:
     - export VERSION=$(git describe --tags --always)
     - cd ~/cd
-    - docker compose down
-    - docker compose up -d
+    - docker compose -f ${DOCKER_COMPOSE_FILE} down
+    - docker compose -f ${DOCKER_COMPOSE_FILE} up -d
   only:
     - tags
     - web
