@@ -18,6 +18,30 @@ build-and-push-image-to-harbor:
     USER: root
   script:
     - |
+      echo "========================================";
+      echo "Downloading HAPI FHIR dependencies";
+      echo "========================================";
+
+      LATEST_DIR="$CIFS_MOUNT_POINT/latest/$HAPI_FHIR_BRANCH";
+      if [ -f "$LATEST_DIR/build-info.txt" ]; then
+        echo "";
+        echo "========================================";
+        echo "Using HAPI FHIR build:";
+        echo "========================================";
+        cat "$LATEST_DIR/build-info.txt";
+        echo "========================================";
+      fi;
+
+      echo "Downloading dependencies...";
+      mkdir -p ~/.m2/repository/ca/uhn/hapi/fhir;
+
+      rsync -av --progress \
+        "$LATEST_DIR/maven-repo/" \
+        ~/.m2/repository/ca/uhn/hapi/fhir/;
+
+      DOWNLOADED_SIZE=$(du -sh ~/.m2/repository/ca/uhn/hapi/fhir | cut -f1);
+      FILE_COUNT=$(find ~/.m2/repository/ca/uhn/hapi/fhir -type f | wc -l);
+
       cp -r ~/.m2 m2-cache
       echo "========================================";
       echo "Building and Pushing with Git Tag";
