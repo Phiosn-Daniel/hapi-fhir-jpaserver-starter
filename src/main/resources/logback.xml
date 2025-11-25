@@ -6,4 +6,6 @@
 		<appender-ref ref="CONSOLE" />
 	</root>
 	<logger name = "org.opencds.cqf.cql.engine.debug" level="DEBUG"/>
+	<logger name="ca.uhn.fhir.jpa.dao.index.DaoSearchParamSynchronizer" level="DEBUG"/>
+	<logger name="ca.uhn.fhir.jpa.model.entity.StorageSettings" level="DEBUG"/>
 </configuration>
