@@ -31,6 +31,8 @@ build-and-push-image-to-harbor:
         cat "$LATEST_DIR/build-info.txt";
         echo "========================================";
       fi;
+      
+      rm -rf ~/.m2/repository
 
       echo "Downloading dependencies...";
       mkdir -p ~/.m2/repository/ca/uhn/hapi/fhir;
