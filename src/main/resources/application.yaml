@@ -190,7 +190,7 @@ hapi:
     # C. Clinical Reasoning / CQL / Care Gaps / CDS Hooks
     # -------------------------------------------------------------------------------
     cr:
-      enabled: false # exposes Clinical Reasoning operation endpoints
+      enabled: true # exposes Clinical Reasoning operation endpoints
       caregaps:
         reporter: "default"
         section_author: "default"
@@ -237,7 +237,7 @@ hapi:
         terminology_parameter_mode: FILTER_IN_MEMORY # AUTO | USE_VALUE_SET_URL | USE_INLINE_CODES | FILTER_IN_MEMORY
         profile_mode: DECLARED # ENFORCED | DECLARED | OPTIONAL | TRUST | OFF
     cdshooks:
-      enabled: false
+      enabled: true
       clientIdHeaderName: client_id
 
     # -------------------------------------------------------------------------------
