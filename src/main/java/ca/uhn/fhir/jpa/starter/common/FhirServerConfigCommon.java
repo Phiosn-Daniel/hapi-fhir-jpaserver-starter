@@ -166,7 +166,7 @@ public class FhirServerConfigCommon {
 	public JpaStorageSettings jpaStorageSettings(AppProperties appProperties) {
 		JpaStorageSettings jpaStorageSettings = new JpaStorageSettings();
 
-		//jpaStorageSettings.setAutoSupportDefaultSearchParams(false);
+		jpaStorageSettings.setAutoSupportDefaultSearchParams(false);
 		jpaStorageSettings.setPreExpandValueSets(appProperties.getPre_expand_value_sets());
 		jpaStorageSettings.setEnableTaskPreExpandValueSets(appProperties.getEnable_task_pre_expand_value_sets());
 		jpaStorageSettings.setPreExpandValueSetsMaxCount(appProperties.getPre_expand_value_sets_max_count());
