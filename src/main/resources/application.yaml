@@ -9,6 +9,12 @@ server:
   tomcat:
     # allow | as a separator in URLs
     relaxed-query-chars: "|"
+    # Thread pool configuration for bulk loading
+    # Optimize based on your workload: more threads = more concurrent writes
+    # Consider: CPU cores, database capacity, and expected concurrent connections
+    threads:
+      max: 200 # Maximum number of worker threads (default: 200)
+      min-spare: 10 # Minimum number of worker threads kept alive (default: 10)
 
 management:
   # Actuator endpoints: only /actuator/health exposed by default
@@ -98,7 +104,14 @@ spring:
     driver-class-name: org.h2.Driver
     # max-active: 15     # (ignored with HikariCP; use hikari.maximum-pool-size)
     hikari:
+      # Database connection pool configuration for bulk loading
+      # Increase pool size for high-volume ingestion (ensure DB can handle connections)
+      # Optimal size depends on: DB capacity, concurrent write operations, system resources
       maximum-pool-size: 50
+      minimum-idle: 10 # Minimum idle connections to maintain
+      connection-timeout: 30000 # Max time to wait for a connection (ms)
+      idle-timeout: 600000 # Max idle time before connection is retired (ms)
+      max-lifetime: 1800000 # Max connection lifetime (ms)
 
   jpa:
     properties:
@@ -261,6 +274,13 @@ hapi:
     bulk_export_enabled: false
     bulk_import_enabled: false
 
+    # Bulk Loading Performance Tips:
+    # 1. Disable delete operation (delete_enabled: false) - see section F below
+    # 2. Optimize database connection pool (spring.datasource.hikari.maximum-pool-size) - see datasource config
+    # 3. Optimize HTTP/Tomcat thread pool (server.tomcat.threads.max) - see server config
+    # 4. Consider enabling mass_ingestion_mode_enabled for very large datasets
+    # See: https://hapifhir.io/hapi-fhir/docs/server_jpa/performance.html#bulk-loading
+
     # -------------------------------------------------------------------------------
     # F. Write / Delete / Integrity
     # -------------------------------------------------------------------------------
@@ -270,7 +290,7 @@ hapi:
     # allow_multiple_delete: true
     allow_override_default_search_params: true
     # auto_create_placeholder_reference_targets: true
-    # mass_ingestion_mode_enabled: true
+    mass_ingestion_mode_enabled: true
     # auto_version_reference_at_paths: Device.patient, Device.location, Device.parent, DeviceMetric.parent, DeviceMetric.source, Observation.device, Observation.subject
     # client_id_strategy: ALPHANUMERIC
     # server_id_strategy: SEQUENTIAL_NUMERIC
@@ -281,6 +301,13 @@ hapi:
     # fhirpath_interceptor_enabled: false
     # filter_search_enabled: true
     # graphql_enabled: true
+
+    # Bulk Loading Performance Optimization
+    # See: https://hapifhir.io/hapi-fhir/docs/server_jpa/performance.html#bulk-loading
+    # Disable delete operation to skip resource reference deletion checks during creation
+    # This can significantly improve write performance for large datasets
+    # WARNING: Only disable if you don't need delete functionality during bulk loading
+    delete_enabled: false
 
     # Thread pool configuration for maintenance operations
     # Defaults to Runtime.getRuntime().availableProcessors() if not specified
