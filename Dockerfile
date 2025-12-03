@@ -61,4 +61,4 @@ USER appuser
 HEALTHCHECK --interval=10s --timeout=10s --start-period=60s --retries=10 \
     CMD curl -f http://localhost:8080/fhir/metadata || exit 1
 
-ENTRYPOINT ["java", "--class-path", "/app/main.war", "-XX:MaxRAMPercentage=80.0","-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
+ENTRYPOINT ["java", "--class-path", "/app/main.war", "-XX:MaxRAMPercentage=80.0", "-Xms4g","-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
