@@ -174,13 +174,18 @@ hapi:
     # -------------------------------------------------------------------------------
     #ig_runtime_upload_enabled: false
     # validate_resource_status_for_package_upload: false   # default true
-    #install_transitive_ig_dependencies: true
+    install_transitive_ig_dependencies: true
     implementationguides:
-      us_core:
-        name: hl7.fhir.us.core
-        version: 6.1.0
+      twcore:
+        name: tw.gov.mohw.twcore
+        version: 0.3.2
         installMode: STORE_AND_INSTALL
         reloadExisting: false
+    #   us_core:
+    #     name: hl7.fhir.us.core
+    #     version: 6.1.0
+    #     installMode: STORE_AND_INSTALL
+    #     reloadExisting: false
     #   swiss:
     #     name: swiss.mednet.fhir
     #     version: 0.8.0
@@ -319,8 +324,8 @@ hapi:
     # G. Narrative & Validation
     # -------------------------------------------------------------------------------
     narrative_enabled: false
-    # validation:
-    #   requests_enabled: true
+    validation:
+      requests_enabled: true
     #   responses_enabled: true
 
     # -------------------------------------------------------------------------------
