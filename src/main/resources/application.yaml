@@ -180,7 +180,7 @@ hapi:
         name: tw.gov.mohw.twcore
         version: 0.3.2
         installMode: STORE_AND_INSTALL
-        reloadExisting: false
+        reloadExisting: true
     #   us_core:
     #     name: hl7.fhir.us.core
     #     version: 6.1.0
