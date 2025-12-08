@@ -136,16 +136,16 @@ spring:
 
         # --- Hibernate Search (Lucene/Elasticsearch) ---
         search:
-          enabled: false
+          enabled: true
           # Lucene backend (default example)
-          # backend:
-          #   type: lucene
-          #   analysis:
-          #     configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiLuceneAnalysisConfigurer
-          #   directory:
-          #     type: local-filesystem
-          #     root: target/lucenefiles
-          #   lucene_version: lucene_current
+          backend:
+            type: lucene
+            analysis:
+              configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiLuceneAnalysisConfigurer
+            directory:
+              type: local-filesystem
+              root: /tmp/target/lucenefiles
+            lucene_version: lucene_current
           # Elasticsearch backend (alternative) — see also hapi.fhir.elasticsearch section in docs
           # backend:
           #   type: elasticsearch
