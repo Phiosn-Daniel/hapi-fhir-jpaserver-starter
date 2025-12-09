@@ -144,7 +144,7 @@ spring:
               configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiLuceneAnalysisConfigurer
             directory:
               type: local-filesystem
-              root: /lucenefiles
+              root: /app/lucenefiles
             lucene_version: lucene_current
           # Elasticsearch backend (alternative) — see also hapi.fhir.elasticsearch section in docs
           # backend:
