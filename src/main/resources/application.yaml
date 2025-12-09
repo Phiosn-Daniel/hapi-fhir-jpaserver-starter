@@ -324,9 +324,9 @@ hapi:
     # G. Narrative & Validation
     # -------------------------------------------------------------------------------
     narrative_enabled: false
-    # validation:
-    #   requests_enabled: true
-    #   responses_enabled: true
+    validation:
+      requests_enabled: true
+      responses_enabled: false
 
     # -------------------------------------------------------------------------------
     # H. MDM (Master Data Management)
