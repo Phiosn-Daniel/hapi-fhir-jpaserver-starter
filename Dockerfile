@@ -14,7 +14,9 @@ RUN mvn clean install -DskipTests -Djdk.lang.Process.launchMechanism=vfork
 
 FROM build-hapi AS build-distroless
 RUN mvn package -DskipTests spring-boot:repackage -Pboot
-RUN mkdir /app && cp /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war
+RUN mkdir -p /app && cp /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war && \
+    mkdir -p /lucenefiles && \
+    chmod -R 777 /lucenefiles
 
 
 ########### bitnami tomcat version is suitable for debugging and comes with a shell
