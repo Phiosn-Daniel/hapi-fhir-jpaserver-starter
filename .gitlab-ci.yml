@@ -95,7 +95,7 @@ auto-test:
   script:
     - sleep 300
     - cd ~/fhir-server-performance-test-suite_oauth
-    - java  -Xms4g -Xmx12g -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions /mnt/postgres/testdata/output/tests/${TESTS_NUMBER} "${END_POINTS}"  oauth-client.properties ${CLIENT_NUMBER} true
+    - java  -Xms4g -Xmx12g -cp target/synthea-bulk-loader.jar bulkload.Test01_LoadDataUsingTransactions /mnt/postgres/testdata/output/tests/${TESTS_NUMBER} "${END_POINTS}"  oauth-client.properties ${CLIENT_NUMBER} false
   only:
     - tags
     - web
