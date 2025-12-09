@@ -1,56 +1,105 @@
-# This is a docker-compose file for HAPI FHIR JPA Server, with a database
-# and an OpenTelemetry/Jaeger/Prometheus stack for observability.
-version: "3.8"
 services:
   hapi-fhir-jpaserver-start-1:
-    image: harbor.phison.com/fhir/hapi-fhir:{HAPI_VERSION}
+    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
     pull_policy: always
+    restart: always
     container_name: hapi-fhir-starter-1
-    restart: on-failure
     deploy:
       resources:
         limits:
-          cpus: '15.0'
-          memory: 15G
+          cpus: '8.0'
+          memory: 16G
         reservations:
-          cpus: '15.0'
-          memory: 15G
+          cpus: '8.0'
+          memory: 16G
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.204:5433/hapi"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
       SPRING_DATASOURCE_USERNAME: "hapipoc"
       SPRING_DATASOURCE_PASSWORD: "hapipoc"
       SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+    volumes:
+      - /term:/term:ro
+      - /igs:/app/igs
+      - lucene-data:/lucenefiles
     ports:
       - "8080:8080"
     depends_on:
       jaeger:
         condition: service_started
-  
+    labels:
+      autoheal: true
+
   hapi-fhir-jpaserver-start-2:
-    image: harbor.phison.com/fhir/hapi-fhir:{HAPI_VERSION}
+    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
     pull_policy: always
+    restart: always
     container_name: hapi-fhir-starter-2
-    restart: on-failure
     deploy:
       resources:
         limits:
-          cpus: '15.0'
-          memory: 15G
+          cpus: '8.0'
+          memory: 16G
         reservations:
-          cpus: '15.0'
-          memory: 15G
+          cpus: '8.0'
+          memory: 16G
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.204:5433/hapi"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
       SPRING_DATASOURCE_USERNAME: "hapipoc"
       SPRING_DATASOURCE_PASSWORD: "hapipoc"
       SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+    volumes:
+      - /term:/term:ro
+      - /igs:/app/igs
+      - lucene-data:/lucenefiles
     ports:
       - "8081:8080"
     depends_on:
       jaeger:
         condition: service_started
+    labels:
+      autoheal: true
+
+  hapi-fhir-jpaserver-start-3:
+    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
+    pull_policy: always
+    restart: always
+    container_name: hapi-fhir-starter-3
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'
+          memory: 16G
+        reservations:
+          cpus: '8.0'
+          memory: 16G
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
+      SPRING_DATASOURCE_USERNAME: "hapipoc"
+      SPRING_DATASOURCE_PASSWORD: "hapipoc"
+      SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+    volumes:
+      - /term:/term:ro
+      - /igs:/app/igs
+      - lucene-data:/lucenefiles
+    ports:
+      - "8082:8080"
+    depends_on:
+      jaeger:
+        condition: service_started
+    labels:
+      autoheal: true
+
+  docker-autoheal:
+    image: willfarrell/autoheal
+    container_name: docker-autoheal
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -76,7 +125,5 @@ services:
     devices:
       - /dev/kmsg
     restart: unless-stopped
-
-networks:
-  hapi-fhir-jpaserver-starter_default:
-    external: true
+volumes:
+  lucene-data:

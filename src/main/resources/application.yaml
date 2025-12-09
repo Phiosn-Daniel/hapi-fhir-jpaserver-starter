@@ -137,14 +137,14 @@ spring:
         # --- Hibernate Search (Lucene/Elasticsearch) ---
         search:
           enabled: true
-          Lucene backend (default example)
+          # Lucene backend (default example)
           backend:
             type: lucene
             analysis:
               configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiLuceneAnalysisConfigurer
             directory:
               type: local-filesystem
-              root: target/lucenefiles
+              root: /lucenefiles
             lucene_version: lucene_current
           # Elasticsearch backend (alternative) — see also hapi.fhir.elasticsearch section in docs
           # backend:
@@ -172,15 +172,15 @@ hapi:
     # -------------------------------------------------------------------------------
     # B. Implementation Guides (IG) & Package Install
     # -------------------------------------------------------------------------------
-    #ig_runtime_upload_enabled: false
+    ig_runtime_upload_enabled: false
     # validate_resource_status_for_package_upload: false   # default true
-    install_transitive_ig_dependencies: true
-    implementationguides:
-      twcore:
-        name: tw.gov.mohw.twcore
-        version: 0.3.2
-        installMode: STORE_AND_INSTALL
-        reloadExisting: false
+    # install_transitive_ig_dependencies: true
+    # implementationguides:
+    #   twcore:
+    #     name: tw.gov.mohw.twcore
+    #     version: 0.3.2
+    #     installMode: STORE_AND_INSTALL
+    #     reloadExisting: true
     #   us_core:
     #     name: hl7.fhir.us.core
     #     version: 6.1.0
@@ -295,12 +295,12 @@ hapi:
     # allow_multiple_delete: true
     allow_override_default_search_params: true
     # auto_create_placeholder_reference_targets: true
-    mass_ingestion_mode_enabled: true
+    # mass_ingestion_mode_enabled: true
     # auto_version_reference_at_paths: Device.patient, Device.location, Device.parent, DeviceMetric.parent, DeviceMetric.source, Observation.device, Observation.subject
     # client_id_strategy: ALPHANUMERIC
     # server_id_strategy: SEQUENTIAL_NUMERIC
     # enforce_referential_integrity_on_delete: false
-    # enforce_referential_integrity_on_write: false
+    enforce_referential_integrity_on_write: false
     # etag_support_enabled: true
     # expunge_enabled: true
     # fhirpath_interceptor_enabled: false
@@ -324,8 +324,8 @@ hapi:
     # G. Narrative & Validation
     # -------------------------------------------------------------------------------
     narrative_enabled: false
-    validation:
-      requests_enabled: true
+    # validation:
+    #   requests_enabled: true
     #   responses_enabled: true
 
     # -------------------------------------------------------------------------------
