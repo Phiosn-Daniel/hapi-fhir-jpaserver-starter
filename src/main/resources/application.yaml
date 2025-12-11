@@ -300,7 +300,7 @@ hapi:
     # client_id_strategy: ALPHANUMERIC
     # server_id_strategy: SEQUENTIAL_NUMERIC
     # enforce_referential_integrity_on_delete: false
-    enforce_referential_integrity_on_write: false
+    # enforce_referential_integrity_on_write: false
     # etag_support_enabled: true
     # expunge_enabled: true
     # fhirpath_interceptor_enabled: false
@@ -324,9 +324,9 @@ hapi:
     # G. Narrative & Validation
     # -------------------------------------------------------------------------------
     narrative_enabled: false
-    validation:
-      requests_enabled: true
-      responses_enabled: false
+    # validation:
+    #   requests_enabled: true
+    #   responses_enabled: false
 
     # -------------------------------------------------------------------------------
     # H. MDM (Master Data Management)
