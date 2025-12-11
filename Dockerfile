@@ -2,8 +2,9 @@ FROM docker.io/library/maven:3.9.9-eclipse-temurin-17 AS build-hapi
 WORKDIR /tmp/hapi-fhir-jpaserver-starter
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=2.13.1
-RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
+RUN curl -k -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
+COPY m2-cache /root/.m2
 COPY pom.xml .
 COPY server.xml .
 RUN mvn -ntp dependency:go-offline
@@ -13,7 +14,9 @@ RUN mvn clean install -DskipTests -Djdk.lang.Process.launchMechanism=vfork
 
 FROM build-hapi AS build-distroless
 RUN mvn package -DskipTests spring-boot:repackage -Pboot
-RUN mkdir /app && cp /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war
+RUN mkdir -p /app && cp /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war && \
+    mkdir -p /app/lucenefiles && \
+    chmod -R 777 /app/lucenefiles
 
 
 ########### bitnami tomcat version is suitable for debugging and comes with a shell
@@ -37,14 +40,27 @@ COPY --from=build-hapi --chown=1001:1001 /tmp/hapi-fhir-jpaserver-starter/opente
 ENV ALLOW_EMPTY_PASSWORD=yes
 
 ########### distroless brings focus on security and runs on plain spring boot - this is the default image
-FROM gcr.io/distroless/java17-debian12:nonroot AS default
-# 65532 is the nonroot user's uid
-# used here instead of the name to allow Kubernetes to easily detect that the container
-# is running as a non-root (uid != 0) user.
-USER 65532:65532
+FROM eclipse-temurin:17-jre AS default
+
+# 安裝 curl 用於健康檢查
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# 創建非 root 用戶
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 WORKDIR /app
 
-COPY --chown=nonroot:nonroot --from=build-distroless /app /app
-COPY --chown=nonroot:nonroot --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
+# 複製應用程式
+COPY --chown=appuser:appuser --from=build-distroless /app /app
+COPY --chown=appuser:appuser --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
 
-ENTRYPOINT ["java", "--class-path", "/app/main.war", "-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
+# 切換到非 root 用戶
+USER appuser
+
+# 加入健康檢查
+HEALTHCHECK --interval=10s --timeout=10s --start-period=60s --retries=10 \
+    CMD curl -f http://localhost:8080/fhir/metadata || exit 1
+
+ENTRYPOINT ["java", "--class-path", "/app/main.war", "-XX:MaxRAMPercentage=80.0", "-Xms4g","-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
