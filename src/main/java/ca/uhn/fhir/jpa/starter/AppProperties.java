@@ -953,7 +953,9 @@ public class AppProperties {
 
 		private Boolean requests_enabled = false;
 		private Boolean responses_enabled = false;
-
+		private Boolean concurrent_bundle_validation_enabled = false;
+		private Integer concurrent_bundle_validation_thread_pool_size = 4;
+		
 		public Boolean getRequests_enabled() {
 			return requests_enabled;
 		}
@@ -968,6 +970,25 @@ public class AppProperties {
 
 		public void setResponses_enabled(Boolean responses_enabled) {
 			this.responses_enabled = responses_enabled;
+		}
+		
+		public Boolean isConcurrent_bundle_validation_enabled() {
+			return concurrent_bundle_validation_enabled;
+		}
+
+		public void setConcurrent_bundle_validation_enabled(
+				Boolean concurrent_bundle_validation_enabled) {
+			this.concurrent_bundle_validation_enabled = concurrent_bundle_validation_enabled;
+		}
+
+		public Integer getConcurrent_bundle_validation_thread_pool_size() {
+			return concurrent_bundle_validation_thread_pool_size;
+		}
+
+		public void setConcurrent_bundle_validation_thread_pool_size(
+				Integer concurrent_bundle_validation_thread_pool_size) {
+			this.concurrent_bundle_validation_thread_pool_size =
+					concurrent_bundle_validation_thread_pool_size;
 		}
 	}
 

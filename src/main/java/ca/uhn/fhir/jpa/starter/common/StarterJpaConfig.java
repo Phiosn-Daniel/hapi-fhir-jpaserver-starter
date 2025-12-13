@@ -74,8 +74,11 @@ import ca.uhn.fhir.rest.server.interceptor.ResponseHighlighterInterceptor;
 import ca.uhn.fhir.rest.server.interceptor.ResponseValidatingInterceptor;
 import ca.uhn.fhir.rest.server.provider.ResourceProviderFactory;
 import ca.uhn.fhir.rest.server.util.ISearchParamRegistry;
+import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.ResultSeverityEnum;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import com.google.common.base.Strings;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
@@ -457,18 +460,23 @@ public class StarterJpaConfig {
 		}
 
 		// Validation
-
 		if (validatorModule != null) {
+			FhirValidator validator = createConfiguredValidator(
+					fhirSystemDao.getContext(),
+					validatorModule,
+					appProperties.getValidation().isConcurrent_bundle_validation_enabled(),
+					appProperties.getValidation().getConcurrent_bundle_validation_thread_pool_size());
+			
 			if (appProperties.getValidation().getRequests_enabled()) {
 				RequestValidatingInterceptor interceptor = new RequestValidatingInterceptor();
 				interceptor.setFailOnSeverity(ResultSeverityEnum.ERROR);
-				interceptor.setValidatorModules(Collections.singletonList(validatorModule));
+				interceptor.setValidator(validator);//Thread safety
 				fhirServer.registerInterceptor(interceptor);
 			}
 			if (appProperties.getValidation().getResponses_enabled()) {
 				ResponseValidatingInterceptor interceptor = new ResponseValidatingInterceptor();
 				interceptor.setFailOnSeverity(ResultSeverityEnum.ERROR);
-				interceptor.setValidatorModules(Collections.singletonList(validatorModule));
+				interceptor.setValidator(validator);//Thread safety
 				fhirServer.registerInterceptor(interceptor);
 			}
 		}
@@ -602,6 +610,33 @@ public class StarterJpaConfig {
 			}
 			fhirServer.registerProvider(provider);
 		}
+	}
+	
+	private FhirValidator createConfiguredValidator(
+			FhirContext theFhirContext,
+			IValidatorModule theValidatorModule,
+			Boolean theEnableConcurrentBundleValidation,
+			Integer theThreadPoolSize) {
+		FhirValidator validator = theFhirContext.newValidator();
+		validator.registerValidatorModule(theValidatorModule);
+
+		// Configure concurrent bundle validation if enabled
+		if (Boolean.TRUE.equals(theEnableConcurrentBundleValidation)) {
+			int poolSize = (theThreadPoolSize != null && theThreadPoolSize > 0)
+					? theThreadPoolSize
+					: 4; // Default to 4 threads if not specified or invalid
+
+			ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
+			validator.setExecutorService(executorService);
+			validator.setConcurrentBundleValidation(true);
+
+			ourLog.info(
+					"Concurrent bundle validation enabled with thread pool size: {}", poolSize);
+		} else {
+			ourLog.debug("Concurrent bundle validation disabled, using sequential validation");
+		}
+
+		return validator;
 	}
 
 	public static IServerConformanceProvider<?> calculateConformanceProvider(
