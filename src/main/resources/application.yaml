@@ -330,7 +330,7 @@ hapi:
       responses_enabled: false
       concurrent_bundle_validation_enabled: true
       #This value can be set incrementally from small to large to achieve a server CPU utilization rate of 90-95%.
-      concurrent_bundle_validation_thread_pool_size: 16 #Maybe 3/4 or 4/5 cores of system?
+      concurrent_bundle_validation_thread_pool_size: 20 #Maybe 3/4 or 4/5 cores of system?
 
     # -------------------------------------------------------------------------------
     # H. MDM (Master Data Management)
