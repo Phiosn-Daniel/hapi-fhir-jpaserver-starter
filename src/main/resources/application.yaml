@@ -13,8 +13,8 @@ server:
     # Optimize based on your workload: more threads = more concurrent writes
     # Consider: CPU cores, database capacity, and expected concurrent connections
     threads:
-      max: 200 # Maximum number of worker threads (default: 200)
-      min-spare: 10 # Minimum number of worker threads kept alive (default: 10)
+      max: 400      # Maximum number of worker threads (default: 200)
+      min-spare: 50 # Minimum number of worker threads kept alive (default: 10)
 
 management:
   # Actuator endpoints: only /actuator/health exposed by default
@@ -108,10 +108,11 @@ spring:
       # Increase pool size for high-volume ingestion (ensure DB can handle connections)
       # Optimal size depends on: DB capacity, concurrent write operations, system resources
       maximum-pool-size: 50
-      minimum-idle: 10 # Minimum idle connections to maintain
+      minimum-idle: 50 # Minimum idle connections to maintain
       connection-timeout: 30000 # Max time to wait for a connection (ms)
       idle-timeout: 600000 # Max idle time before connection is retired (ms)
       max-lifetime: 1800000 # Max connection lifetime (ms)
+      connection-init-sql: SELECT 1
 
   jpa:
     properties:
@@ -329,7 +330,7 @@ hapi:
       responses_enabled: false
       concurrent_bundle_validation_enabled: true
       #This value can be set incrementally from small to large to achieve a server CPU utilization rate of 90-95%.
-      concurrent_bundle_validation_thread_pool_size: 20 #Maybe 3/4 or 4/5 cores of system?
+      concurrent_bundle_validation_thread_pool_size: 24 #Maybe 3/4 or 4/5 cores of system?
 
     # -------------------------------------------------------------------------------
     # H. MDM (Master Data Management)
@@ -390,7 +391,7 @@ hapi:
     # A threshold of -1 means to load all results. Note that if the final threshold is a
     # number other than -1, the system will never prefetch more than the given number.
     # CSV list; -1 as final value means "all"
-    search_prefetch_thresholds: 13,503,2003,-1
+    search_prefetch_thresholds: 20,100,500
 
     # -------------------------------------------------------------------------------
     # M. Extensibility (custom beans / interceptors / providers)
