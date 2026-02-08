@@ -1,96 +1,56 @@
 services:
-  hapi-fhir-jpaserver-start-1:
-    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
-    pull_policy: always
+  # 單一 HAPI FHIR 節點（含 Debug 功能）- 本地構建
+  hapi-fhir-jpaserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hapi-fhir-jpaserver:debug
     restart: always
-    container_name: hapi-fhir-starter-1
+    container_name: hapi-fhir-starter
     deploy:
       resources:
         limits:
-          cpus: '8.0'
-          memory: 16G
+          cpus: '4.0'
+          memory: 8G
         reservations:
-          cpus: '8.0'
-          memory: 16G
+          cpus: '2.0'
+          memory: 4G
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
-      SPRING_DATASOURCE_USERNAME: "hapipoc"
-      SPRING_DATASOURCE_PASSWORD: "hapipoc"
+      # Remote Debug 設定
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://hapi-fhir-postgres:5432/hapi"
+      SPRING_DATASOURCE_USERNAME: "admin"
+      SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
     volumes:
-      - /term:/term:ro
-      - /igs:/app/igs
       - lucene-data:/app/lucenefiles
     ports:
-      - "8080:8080"
+      - "8080:8080"   # FHIR API
+      - "5005:5005"   # Remote Debug
     depends_on:
-      jaeger:
-        condition: service_started
+      hapi-fhir-postgres:
+        condition: service_healthy
     labels:
       autoheal: true
 
-  hapi-fhir-jpaserver-start-2:
-    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
-    pull_policy: always
+  hapi-fhir-postgres:
+    image: postgres:15-alpine
+    container_name: hapi-fhir-postgres
     restart: always
-    container_name: hapi-fhir-starter-2
-    deploy:
-      resources:
-        limits:
-          cpus: '8.0'
-          memory: 16G
-        reservations:
-          cpus: '8.0'
-          memory: 16G
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
-      SPRING_DATASOURCE_USERNAME: "hapipoc"
-      SPRING_DATASOURCE_PASSWORD: "hapipoc"
-      SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+      POSTGRES_DB: "hapi"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
     volumes:
-      - /term:/term:ro
-      - /igs:/app/igs
-      - lucene-data:/app/lucenefiles
+      - postgres-data:/var/lib/postgresql/data
     ports:
-      - "8081:8080"
-    depends_on:
-      jaeger:
-        condition: service_started
-    labels:
-      autoheal: true
-
-  hapi-fhir-jpaserver-start-3:
-    image: harbor.phison.com/fhir/hapi-fhir:${VERSION}
-    pull_policy: always
-    restart: always
-    container_name: hapi-fhir-starter-3
-    deploy:
-      resources:
-        limits:
-          cpus: '8.0'
-          memory: 16G
-        reservations:
-          cpus: '8.0'
-          memory: 16G
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.197.214:5434/hapi"
-      SPRING_DATASOURCE_USERNAME: "hapipoc"
-      SPRING_DATASOURCE_PASSWORD: "hapipoc"
-      SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
-    volumes:
-      - /term:/term:ro
-      - /igs:/app/igs
-      - lucene-data:/app/lucenefiles
-    ports:
-      - "8082:8080"
-    depends_on:
-      jaeger:
-        condition: service_started
-    labels:
-      autoheal: true
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d hapi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   docker-autoheal:
     image: willfarrell/autoheal
@@ -111,19 +71,6 @@ services:
       - "14250:14250" # Collector gRPC
     restart: unless-stopped
 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    ports:
-      - "18080:8080" # cAdvisor's Web UI (optional)
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
-    restart: unless-stopped
 volumes:
   lucene-data:
+  postgres-data:

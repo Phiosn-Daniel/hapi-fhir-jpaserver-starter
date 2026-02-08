@@ -1,5 +1,6 @@
 *.orig
 target/
+m2-cache/
 *.iml
 
 .github

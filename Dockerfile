@@ -4,6 +4,7 @@ WORKDIR /tmp/hapi-fhir-jpaserver-starter
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=2.13.1
 RUN curl -k -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
+# 複製預先下載的 Maven 依賴快取（加速構建）
 COPY m2-cache /root/.m2
 COPY pom.xml .
 COPY server.xml .
