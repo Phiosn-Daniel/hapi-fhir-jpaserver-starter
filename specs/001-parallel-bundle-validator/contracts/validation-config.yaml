@@ -1,0 +1,21 @@
+# Validation Configuration Contract
+# 定義平行驗證器在 application.yaml 中的配置結構
+
+# 位於 hapi.fhir.validation 下的配置項
+hapi:
+  fhir:
+    validation:
+      # 是否啟用請求驗證
+      requests_enabled: true
+      # 是否啟用回應驗證
+      responses_enabled: false
+      # 是否啟用平行 Bundle 驗證
+      concurrent_bundle_validation_enabled: true
+      # 平行驗證執行緒池大小（0 或負值表示使用 CPU 核心數）
+      concurrent_bundle_validation_thread_pool_size: 0
+      # 觸發平行驗證的最低 Bundle entry 數量
+      concurrent_bundle_validation_entry_threshold: 10
+      # CPU 使用率上限（0.0~1.0），超過此值將降級為循序驗證
+      concurrent_bundle_validation_cpu_limit: 0.80
+      # CPU 使用率檢查間隔（毫秒）
+      concurrent_bundle_validation_cpu_check_interval_ms: 1000

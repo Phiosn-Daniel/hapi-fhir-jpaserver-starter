@@ -955,7 +955,10 @@ public class AppProperties {
 		private Boolean responses_enabled = false;
 		private Boolean concurrent_bundle_validation_enabled = false;
 		private Integer concurrent_bundle_validation_thread_pool_size = 4;
-		
+		private Integer concurrent_bundle_validation_entry_threshold = 10;
+		private Double concurrent_bundle_validation_cpu_limit = 0.80;
+		private Long concurrent_bundle_validation_cpu_check_interval_ms = 1000L;
+
 		public Boolean getRequests_enabled() {
 			return requests_enabled;
 		}
@@ -989,6 +992,36 @@ public class AppProperties {
 				Integer concurrent_bundle_validation_thread_pool_size) {
 			this.concurrent_bundle_validation_thread_pool_size =
 					concurrent_bundle_validation_thread_pool_size;
+		}
+
+		public Integer getConcurrent_bundle_validation_entry_threshold() {
+			return concurrent_bundle_validation_entry_threshold;
+		}
+
+		public void setConcurrent_bundle_validation_entry_threshold(
+				Integer concurrent_bundle_validation_entry_threshold) {
+			this.concurrent_bundle_validation_entry_threshold =
+					concurrent_bundle_validation_entry_threshold;
+		}
+
+		public Double getConcurrent_bundle_validation_cpu_limit() {
+			return concurrent_bundle_validation_cpu_limit;
+		}
+
+		public void setConcurrent_bundle_validation_cpu_limit(
+				Double concurrent_bundle_validation_cpu_limit) {
+			this.concurrent_bundle_validation_cpu_limit =
+					concurrent_bundle_validation_cpu_limit;
+		}
+
+		public Long getConcurrent_bundle_validation_cpu_check_interval_ms() {
+			return concurrent_bundle_validation_cpu_check_interval_ms;
+		}
+
+		public void setConcurrent_bundle_validation_cpu_check_interval_ms(
+				Long concurrent_bundle_validation_cpu_check_interval_ms) {
+			this.concurrent_bundle_validation_cpu_check_interval_ms =
+					concurrent_bundle_validation_cpu_check_interval_ms;
 		}
 	}
 

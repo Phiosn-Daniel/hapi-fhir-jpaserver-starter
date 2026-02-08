@@ -78,8 +78,6 @@ import ca.uhn.fhir.rest.server.util.ISearchParamRegistry;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.ResultSeverityEnum;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import com.google.common.base.Strings;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
@@ -460,24 +458,23 @@ public class StarterJpaConfig {
 			fhirServer.registerInterceptor(binaryStorageInterceptor);
 		}
 
-		// Validation
+		// Validation - 使用 CPU 感知的平行驗證器
 		if (validatorModule != null) {
 			FhirValidator validator = createConfiguredValidator(
 					fhirSystemDao.getContext(),
 					validatorModule,
-					appProperties.getValidation().isConcurrent_bundle_validation_enabled(),
-					appProperties.getValidation().getConcurrent_bundle_validation_thread_pool_size());
-			
+					appProperties);
+
 			if (appProperties.getValidation().getRequests_enabled()) {
 				RequestValidatingInterceptor interceptor = new RequestValidatingInterceptor();
 				interceptor.setFailOnSeverity(ResultSeverityEnum.ERROR);
-				interceptor.setValidator(validator);//Thread safety
+				interceptor.setValidator(validator);
 				fhirServer.registerInterceptor(interceptor);
 			}
 			if (appProperties.getValidation().getResponses_enabled()) {
 				ResponseValidatingInterceptor interceptor = new ResponseValidatingInterceptor();
 				interceptor.setFailOnSeverity(ResultSeverityEnum.ERROR);
-				interceptor.setValidator(validator);//Thread safety
+				interceptor.setValidator(validator);
 				fhirServer.registerInterceptor(interceptor);
 			}
 		}
@@ -616,25 +613,46 @@ public class StarterJpaConfig {
 	private FhirValidator createConfiguredValidator(
 			FhirContext theFhirContext,
 			IValidatorModule theValidatorModule,
-			Boolean theEnableConcurrentBundleValidation,
-			Integer theThreadPoolSize) {
+			AppProperties appProperties) {
 		FhirValidator validator = theFhirContext.newValidator();
 		validator.registerValidatorModule(theValidatorModule);
 
-		// Configure concurrent bundle validation if enabled
-		if (Boolean.TRUE.equals(theEnableConcurrentBundleValidation)) {
-			int poolSize = (theThreadPoolSize != null && theThreadPoolSize > 0)
-					? theThreadPoolSize
-					: 4; // Default to 4 threads if not specified or invalid
+		AppProperties.Validation validation = appProperties.getValidation();
+		boolean concurrentEnabled = Boolean.TRUE.equals(validation.isConcurrent_bundle_validation_enabled());
 
-			ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
-			validator.setExecutorService(executorService);
+		if (concurrentEnabled) {
+			// 使用 CPU 感知的執行緒池替代固定執行緒池
+			int poolSize = (validation.getConcurrent_bundle_validation_thread_pool_size() != null
+					&& validation.getConcurrent_bundle_validation_thread_pool_size() > 0)
+					? validation.getConcurrent_bundle_validation_thread_pool_size()
+					: Runtime.getRuntime().availableProcessors();
+
+			double cpuLimit = (validation.getConcurrent_bundle_validation_cpu_limit() != null)
+					? validation.getConcurrent_bundle_validation_cpu_limit()
+					: 0.80;
+
+			long checkInterval = (validation.getConcurrent_bundle_validation_cpu_check_interval_ms() != null)
+					? validation.getConcurrent_bundle_validation_cpu_check_interval_ms()
+					: 1000L;
+
+			int entryThreshold = (validation.getConcurrent_bundle_validation_entry_threshold() != null)
+					? validation.getConcurrent_bundle_validation_entry_threshold()
+					: 10;
+
+			int coreSize = Math.max(2, poolSize / 2);
+			ca.uhn.fhir.jpa.starter.validation.CpuAwareThreadPoolExecutor executor =
+					new ca.uhn.fhir.jpa.starter.validation.CpuAwareThreadPoolExecutor(
+							coreSize, poolSize, cpuLimit, checkInterval);
+
+			validator.setExecutorService(executor);
 			validator.setConcurrentBundleValidation(true);
+			validator.setConcurrentBundleEntryThreshold(entryThreshold);
 
-			ourLog.info(
-					"Concurrent bundle validation enabled with thread pool size: {}", poolSize);
+			ourLog.info("✅ Concurrent bundle validation enabled: poolSize={}, entryThreshold={}, "
+							+ "cpuLimit={:.0f}%, checkInterval={}ms",
+					poolSize, entryThreshold, cpuLimit * 100, checkInterval);
 		} else {
-			ourLog.debug("Concurrent bundle validation disabled, using sequential validation");
+			ourLog.info("📋 Concurrent bundle validation disabled, using sequential validation");
 		}
 
 		return validator;
